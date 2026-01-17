@@ -8,8 +8,8 @@ from threading import Thread
 # --- CONFIG ---
 DURATION_SEC = 30
 INTERVAL_SEC = 1
-KEYBOARD_DEVICE = "/dev/input/event11"   # kanata keyboard (or event0)
-MOUSE_DEVICE = "/dev/input/event9"       # touchpad
+KEYBOARD_DEVICE = "/dev/input/event18"   # kanata keyboard (or event0)
+MOUSE_DEVICE = "/dev/input/event8"       # touchpad
 CSV_FILE = "metrics_log.csv"
 
 # --- Helpers ---

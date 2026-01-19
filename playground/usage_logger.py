@@ -5,7 +5,6 @@ import csv
 import subprocess
 import json
 import threading
-from evdev import InputDevice, list_devices, ecodes
 
 LOGFILE = "system_usage.csv"
 INTERVAL = 1.0   # seconds
@@ -15,52 +14,51 @@ INTERVAL = 1.0   # seconds
 keyboard_events = 0
 mouse_events = 0
 
-def find_devices():
-    keyboards = []
-    mice = []
-    for path in list_devices():
-        dev = InputDevice(path)
-        caps = dev.capabilities()
-        if ecodes.EV_KEY in caps:
-            keyboards.append(dev)
-        if ecodes.EV_REL in caps or ecodes.EV_ABS in caps:
-            mice.append(dev)
-    return keyboards, mice
-
-def input_counter(dev, is_keyboard=True):
+def libinput_monitor():
     global keyboard_events, mouse_events
-    for event in dev.read_loop():
-        if event.type in (ecodes.EV_KEY, ecodes.EV_REL, ecodes.EV_ABS):
-            if is_keyboard:
-                keyboard_events += 1
-            else:
-                mouse_events += 1
 
-def start_input_threads():
-    keyboards, mice = find_devices()
-    for k in keyboards:
-        t = threading.Thread(target=input_counter, args=(k, True), daemon=True)
-        t.start()
-    for m in mice:
-        t = threading.Thread(target=input_counter, args=(m, False), daemon=True)
-        t.start()
+    proc = subprocess.Popen(
+        ["libinput", "debug-events", "--json"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        bufsize=1
+    )
+
+    for line in proc.stdout:
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        etype = event.get("type", "")
+
+        if etype == "KEYBOARD_KEY":
+            keyboard_events += 1
+
+        elif etype in ("POINTER_MOTION", "POINTER_BUTTON"):
+            mouse_events += 1
+
+
+def start_input_thread():
+    t = threading.Thread(target=libinput_monitor, daemon=True)
+    t.start()
 
 
 # ---------- Niri window info ----------
 def get_niri_info():
     try:
-        out = subprocess.check_output(["niri", "msg", "-j"], text=True)
-        data = json.loads(out)
-        windows = data["windows"]
-        focused = data["focused"]
-        active_class = ""
+        # Get focused window
+        out = subprocess.check_output(["niri", "msg", "-j", "focused-window"], text=True)
+        focused = json.loads(out)
+        active_class = focused.get("app_id", "")
 
-        for w in windows:
-            if w["id"] == focused:
-                active_class = w.get("app_id", "")
-                break
+        # Get total window count
+        out2 = subprocess.check_output(["niri", "msg", "-j", "windows"], text=True)
+        windows = json.loads(out2)
+        win_count = len(windows)
 
-        return active_class, len(windows)
+        return active_class, win_count
 
     except Exception:
         return "", 0
@@ -68,7 +66,7 @@ def get_niri_info():
 
 # ---------- Main logger ----------
 def main():
-    start_input_threads()
+    start_input_thread()
 
     prev_disk = psutil.disk_io_counters()
     prev_net = psutil.net_io_counters()

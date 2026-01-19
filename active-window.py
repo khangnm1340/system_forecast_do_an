@@ -35,7 +35,6 @@ last_window_id = None
 window_switch_count = 0
 
 prev_smooth_wpm = 0.0
-
 # =========================
 # CSV INIT
 # =========================
@@ -61,9 +60,7 @@ if not CSV_PATH.exists():
             "hour",
         ])
 
-# =========================
-# INPUT LISTENER
-# =========================
+
 def input_listener():
     global last_keyboard_time, last_mouse_time, keys_counter
 

@@ -1,0 +1,5 @@
+timestamp,cpu_percent,ram_percent,disk_read_Bps,disk_write_Bps,net_in_Bps,net_out_Bps,active_window_class,window_count,keyboard_rate,mouse_rate,process_count
+1768825432,11.0,23.7,0,0,0,0,,0,0,0,310
+1768825433,9.9,23.7,0,1212416,0,0,,0,0,0,310
+1768825434,8.4,23.7,20480,753664,0,0,,0,0,5,310
+1768825435,8.3,23.7,0,749568,0,0,,0,0,23,310

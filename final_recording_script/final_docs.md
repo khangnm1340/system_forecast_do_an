@@ -39,11 +39,16 @@ timestamp,cpu_percent,ram_percent,disk_read_Bps,disk_write_Bps,net_in_Bps,net_ou
 
 this is the script to print the selected parameter as a notification (for testing)
 ```sh
+let params = [cpu_percent ram_percent disk_write_Bps net_in_Bps max_gpu]
+
 loop {
-open comprehensive_activity_log.csv | last
-  | get app_id window_title
+  open comprehensive_activity_log.csv
+  | last
+  | select ...$params
   | notify-send -t 1000 $"($in)"
 
   sleep 1sec
 }
 ```
+
+# calculate the variance , so that the model will learn

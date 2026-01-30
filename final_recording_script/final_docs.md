@@ -23,9 +23,9 @@ Define states differently:
 
 
 idle
-interactive_light (typing / browsing / reading)
-interactive_heavy (coding, compiling)
+interactive_light (browsing / reading/ texting)
 media_playback
+interactive_heavy (coding,compiling code, playing games, training model)
 background_download
 
 A study on the observability of human-computer interaction states through system resource telemetry.
@@ -40,7 +40,7 @@ timestamp,cpu_percent,ram_percent,disk_read_Bps,disk_write_Bps,net_in_Bps,net_ou
 
 
 this is the script to print the selected parameter as a notification (for testing)
-```sh
+```nu
 let params = [cpu_percent ram_percent disk_write_Bps net_in_Bps max_gpu]
 
 loop {
@@ -87,3 +87,14 @@ The window label = `watch`
 # THE LABELING MECHANISM IS OFFICIALLY DONEEEEE
 
 if no mouse or keyboard activity, fall back to idling
+
+
+don't worry about the "idle state", you can set it later using "idle_time_sec"
+
+added waybar module
+
+different machines have different usage pattern, but overally, it's consistent
+
+watching a movie too (so the model wouldn't just associate youtube with "media watching")
+
+already test the correctness of labels

@@ -17,6 +17,7 @@ WINDOW = 60                      # WPM window seconds
 INPUT_ACTIVE_WINDOW = 3.0        # active threshold
 PROJECT_DIR = Path(__file__).resolve().parent
 CSV_PATH = PROJECT_DIR / "comprehensive_activity_log.csv"
+LABEL_FILE = PROJECT_DIR / "current_state.txt"
 
 # =========================
 # GLOBAL STATE
@@ -120,6 +121,14 @@ def get_keys_per_sec():
 def get_idle_time():
     return round(time.time() - max(last_keyboard_time, last_mouse_time), 1)
 
+def get_current_label():
+    try:
+        if LABEL_FILE.exists():
+            return LABEL_FILE.read_text().strip()
+    except Exception:
+        pass
+    return "none"
+
 # =========================
 # MAIN LOGGER
 # =========================
@@ -171,12 +180,15 @@ def log_row():
 
     # 5. Build Final Row
     # Order: timestamp, cpu, ram, disk_r, disk_w, net_i, net_o, app_id, title, k_act, m_act, kps, idle, max_gpu, [all gpu stats]
+    current_label = get_current_label()
+
     row = [
         datetime.now().isoformat(timespec="seconds"),
         cpu, ram, d_read, d_write, n_in, n_out,
         app_id, win_title,
         k_active, m_active, kps, idle,
-        max_gpu_val
+        max_gpu_val,
+        current_label
     ] + gpu_row_data
 
     # 6. CSV Header Init (Dynamic based on GPU headers)
@@ -184,7 +196,8 @@ def log_row():
         base_headers = [
             "timestamp", "cpu_percent", "ram_percent", "disk_read_Bps", "disk_write_Bps",
             "net_in_Bps", "net_out_Bps", "app_id", "window_title",
-            "keyboard_active", "mouse_active", "keys_per_sec", "idle_time_sec", "max_gpu"
+            "keyboard_active", "mouse_active", "keys_per_sec", "idle_time_sec", "max_gpu",
+            "label"
         ]
         full_headers = base_headers + (gpu_headers if gpu_headers else ["gpu_data_pending"])
         with open(CSV_PATH, "w", newline="") as f:

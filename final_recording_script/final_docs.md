@@ -98,3 +98,16 @@ different machines have different usage pattern, but overally, it's consistent
 watching a movie too (so the model wouldn't just associate youtube with "media watching")
 
 already test the correctness of labels
+
+
+```nu
+open comprehensive_activity_log.csv
+| update label {|row|
+    if $row.idle_time_sec > 10 and $row.label != "media_watching" {
+        "Idle"
+    } else {
+        $row.label
+    }
+}
+| save comprehensive_activity_log_with_Idle.csv
+```

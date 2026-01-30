@@ -20,6 +20,8 @@ GPU drops when UI static
 realize can't know weather I'm typing or browsing, pivot to another state system
 
 Define states differently:
+
+
 idle
 interactive_light (typing / browsing / reading)
 interactive_heavy (coding, compiling)
@@ -52,3 +54,36 @@ loop {
 ```
 
 # calculate the variance , so that the model will learn
+
+add behaviors so the model will learn
+
+# manual state switching using a key for labeling
+https://chatgpt.com/share/697bcb7c-e6bc-800f-889f-ad8a334350ec
+
+Variance-based
+std(cpu_percent)
+std(gpu_RCS_pct)
+std(net_in_Bps)
+
+timed window implementation (https://chatgpt.com/share/697c3906-6360-800f-bd73-e1ff0c52ffae)
+because individual rows are meaningless
+
+# So if the raw labels are:
+
+```
+watch, watch, watch, idle, idle
+```
+
+The window label = `watch`
+
+[1 2 3 4 5]: browsing
+1 [2 3 4 5 6]: browsing
+1 2 [3 4 5 6 7]: watching media
+1 2 3 [4 5 6 7 8]: watching media
+1 2 3 4 [5 6 7 8 9] : idle
+1 2 3 4 5 [6 7 8 9 10] :idle
+1 2 3 4 5 6 [7 8 9 10 11] : coding
+
+# THE LABELING MECHANISM IS OFFICIALLY DONEEEEE
+
+if no mouse or keyboard activity, fall back to idling

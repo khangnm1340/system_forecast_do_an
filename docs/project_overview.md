@@ -117,22 +117,18 @@ Các trạng thái tương tác (interaction states) được định nghĩa ở
 - **Media playback** (xem video, nghe nhạc)
 - **Interactive heavy** (lập trình, biên dịch, thao tác nặng)
 
-### 6.2. Vai trò của rule-based labeling
+### 6.2. Chiến lược gán nhãn (labeling strategy)
 
-Do không có nhãn sẵn, nhóm sử dụng **các luật (heuristics)** để gán nhãn ban đầu, ví dụ:
+Trong quá trình triển khai, nhóm nhận thấy rằng phương pháp gán nhãn hoàn toàn dựa trên các luật heuristic (rule-based labeling) tuy thuận tiện nhưng không đảm bảo độ chính xác tuyệt đối, đặc biệt trong các tình huống người dùng chuyển trạng thái nhanh hoặc thực hiện đa nhiệm.
 
-- **Typing**: `keys_per_sec` vượt một ngưỡng nhất định
-- **Idle**: bàn phím và chuột không hoạt động trong một khoảng thời gian dài
-- **Media playback**: `network_in` cao trong khi bàn phím không hoạt động
+Do đó, nhóm áp dụng phương pháp **human-in-the-loop labeling**, trong đó người dùng chủ động gán nhãn trạng thái tương tác của mình thông qua các phím tắt được ánh xạ sẵn. Mỗi phím tương ứng với một trạng thái (ví dụ: idle, media playback, coding, browsing), và trạng thái hiện tại được ghi vào một file dùng chung.
 
-Quá trình này được kiểm tra bằng cách:
+Script thu thập dữ liệu sẽ đọc trạng thái này tại mỗi thời điểm ghi log và sử dụng làm nhãn cho dữ liệu tương ứng. Cách tiếp cận này đảm bảo rằng nhãn phản ánh **ý định thực sự của người dùng**, thay vì suy đoán gián tiếp từ các tín hiệu hệ thống.
 
-- Hiển thị trạng thái suy luận theo thời gian thực
-- So sánh với hành vi thực tế của người dùng
-
-Nhóm xác định rằng:
-
-> Nếu giai đoạn gán nhãn sai, **toàn bộ mô hình học máy phía sau sẽ không còn ý nghĩa**.
+Phương pháp này giúp:
+- Giảm nhiễu trong quá trình gán nhãn
+- Tránh hiện tượng label leakage
+- Kết hợp được tính chính xác của session-based labeling và tính linh hoạt của dữ liệu sử dụng tự nhiên
 
 ---
 
@@ -150,6 +146,13 @@ Các mô hình đơn giản (ví dụ: *logistic regression*, *random forest*) �
 - Phù hợp với kích thước và chất lượng dữ liệu thu thập được
 
 ---
+### 7.1. Học theo cửa sổ thời gian (time-window based learning)
+
+Một quan sát quan trọng trong đề tài là dữ liệu telemetry tại từng thời điểm riêng lẻ (mỗi giây) thường không mang đủ thông tin để suy luận trạng thái tương tác của người dùng. Các giá trị đơn lẻ như CPU usage hoặc network throughput tại một thời điểm có thể tương ứng với nhiều hành vi khác nhau.
+
+Vì vậy, thay vì huấn luyện mô hình trên từng dòng dữ liệu, nhóm áp dụng cách tiếp cận học theo **cửa sổ thời gian**. Cụ thể, các mẫu dữ liệu liên tiếp trong một khoảng thời gian (ví dụ: 5–10 giây) được gom lại thành một cửa sổ, từ đó trích xuất các đặc trưng thống kê như giá trị trung bình, độ lệch chuẩn, giá trị lớn nhất hoặc nhỏ nhất.
+
+Mỗi cửa sổ thời gian được xem là một mẫu huấn luyện, cho phép mô hình học được các **mẫu hình động theo thời gian** (temporal patterns), vốn phản ánh hành vi người dùng tốt hơn so với các quan sát tức thời.
 
 ## 8. Thách thức và vấn đề dữ liệu
 
@@ -171,5 +174,9 @@ Thông qua đề tài này, nhóm rút ra một số nhận định quan trọng
 - Không phải mọi hành vi người dùng đều có thể suy luận chính xác từ dữ liệu telemetry hệ thống
 - Dữ liệu thực tế thường nhiễu, mất cân bằng và khó xử lý hơn dữ liệu lý tưởng
 - Học máy nên được sử dụng như **một công cụ đánh giá giới hạn**, không phải lời giải tuyệt đối
+- 
+Ngoài ra, nhóm cũng nhận thấy rằng không phải mọi trạng thái tương tác đều có thể suy luận chính xác từ dữ liệu telemetry hệ thống. Một số trạng thái như media playback hoặc các tác vụ tính toán nặng có dấu hiệu tài nguyên rõ ràng, trong khi các trạng thái tương tác nhẹ (ví dụ: đọc, gõ phím ngắn, duyệt nội dung) có mức chồng lấn cao với trạng thái idle.
+
+Đây được xem là giới hạn mang tính bản chất của bài toán, xuất phát từ mức độ quan sát được của dữ liệu, thay vì hạn chế của mô hình học máy.
 
 Đề tài hướng tới mục tiêu **hiểu rõ giới hạn của hệ thống**, thay vì chỉ tối ưu độ chính xác của mô hình.

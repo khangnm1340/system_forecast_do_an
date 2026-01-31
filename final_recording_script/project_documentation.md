@@ -26,7 +26,7 @@ We pivoted to classifying the user's state into three categories:
 *   **Interactive (Light):** Coding, browsing, reading, or texting.
 *   **Media Playback:** Watching videos or movies.
 
-*Note: "Interactive Heavy" (gaming/training models) and "Background Downloads" were excluded as they are easily identifiable via simple threshold rules (e.g., Net In > X Mbps) and do not require complex ML.*
+*Note: "Interactive Heavy" (gaming/training models/compling code) and "Background Downloads" were excluded as they are easily identifiable via simple threshold rules (e.g., Net In > X Mbps) and do not require complex ML.*
 
 ---
 
@@ -38,6 +38,7 @@ The group (4 members) used **Arch Linux** with the **Niri** window manager. This
 *   **Window Context:** Captured via `niri msg -j focused-window` (app_id and window titles).
 *   **Input Metrics:** Captured via `libinput debug-events`. We calculated WPM (Words Per Minute), keys per second, and "typing bursts" to provide ground truth for the model.
 *   **GPU Metrics:** We discovered that GPU sub-engines are the "smoking gun" for state detection. We used `intel_gpu_top`.
+We were having a lot of trouble recording the gpu, so we even cloned `btop` a system resource live monitoring tool and (tell AI) to scan the source code to see how they're doing it. (Btop used cpp used a bundled/adapted version of `intel_gpu_top`)
 
 > **Technical Note:** To run `intel_gpu_top` without constant sudo prompts, we applied the following capability:
 > ```bash
@@ -99,6 +100,7 @@ if prediction == 'interactive_light':
 ```
 
 ![Screenshot Placeholder: Confusion Matrix showing 83% accuracy and high precision for Idle states]
+at first the model accuracy went up to 90% and 100% for idling, but I realized it was reading from `idle_time_sec`
 
 ---
 

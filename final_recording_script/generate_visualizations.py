@@ -197,9 +197,48 @@ def plot_throughput_mountain(df):
     ax2.set_ylabel('Disk Bytes/s (Read/-Write)')
     ax2.legend(loc='upper right')
     ax2.axhline(0, color='black', linewidth=0.5)
+
+    # --- Add State Overlay ---
+    unique_labels = df['label'].unique()
+    label_colors = {
+        'idle': 'lightgray', 
+        'interactive_light': '#d9f0a3', # light green-ish
+        'media_watching': '#a6bddb',    # light blue-ish
+        'gaming': '#fdae6b'             # light orange-ish
+    }
+    default_color = 'whitesmoke'
+
+    # Find segments
+    # Note: df['label_change'] might already exist if plot_state_overlay ran, but re-calculate to be safe/independent
+    df['label_change'] = df['label'].shift() != df['label']
+    changes = df[df['label_change']].index.tolist()
+    if 0 not in changes:
+        changes.insert(0, 0)
+    changes.append(len(df))
+    
+    for j in range(len(changes) - 1):
+        start_idx = changes[j]
+        end_idx = changes[j+1] - 1
+        if end_idx >= len(df): end_idx = len(df) - 1
+        
+        segment_label = df.iloc[start_idx]['label']
+        start_time = df.iloc[start_idx]['timestamp']
+        end_time = df.iloc[end_idx]['timestamp']
+        
+        facecolor = label_colors.get(segment_label, default_color)
+        
+        # Apply to both axes
+        for ax in [ax1, ax2]:
+            ax.axvspan(start_time, end_time, facecolor=facecolor, alpha=0.3, linewidth=0)
+
+    # Legend for states (add to figure, similar to plot_state_overlay)
+    patches = [mpatches.Patch(color=color, label=label, alpha=0.3) 
+               for label, color in label_colors.items() if label in unique_labels]
+    fig.legend(handles=patches, loc='upper center', ncol=len(patches), title="Activity States")
+    # -------------------------
     
     plt.xlabel('Time')
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.95]) # make room for legend
     plt.savefig(f"{OUTPUT_DIR}/4_throughput_mountain.png")
     plt.close()
 

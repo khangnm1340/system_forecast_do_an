@@ -1,4 +1,9 @@
+>[!NOTE]
+>Most of my work happens in local prototypes and planning; I value a clean, working final product over a high commit count.
+
 # System State Forecast
+
+[View the Presentation (PDF)](final_recording_script/presentation/diatypst/google_studio.pdf) for a more finished overview of this project.
 
 ## Project Overview
 
@@ -8,6 +13,8 @@
 
 **How it works:** 
 A Random Forest classifier is trained on rolling statistical features (Mean/Std Dev) over 5s and 30s windows of system metrics. The system achieved ~83% accuracy. A major challenge, distinguishing "Idle" from "Light Interactive" reading states, was solved by analyzing micro-spikes in maximum GPU engine utilization (`max_gpu`) and applying heuristic overrides based on deep GPU sleep states (`RC6`).
+
+![State Overlay](final_recording_script/activity_reports/1_state_overlay.png)
 
 The system architecture comprises:
 1. **Data Collection:** `10_comprehensive_activity_log.py` runs as a daemon collecting `psutil` and `intel_gpu_top` metrics.
